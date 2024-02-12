@@ -645,15 +645,15 @@ def simulation(lbm_args, data_dir, meshio_mesh, initial_phase, fluid_only=False)
     print(f"Relaxation parameter tau_viscosity_nu = {tau_viscosity_nu}, tau_diffusivity_s = {tau_diffusivity_s}, surface tensiont coeff = {st_coeff}")
     print(f"Lattice = ({Nx}, {Ny}, {Nz}), size = {lbm_args['h']['value']*1e6} micro m")
 
-    phase = initial_phase
-    f_distribute = np.tile(weights, (Nx, Ny, Nz, 1)) * rho0
-    h_distribute = np.tile(weights, (Nx, Ny, Nz, 1)) * T0*heat_capacity
-    mass = np.sum(f_distribute, axis=-1)
-    rho = compute_rho(f_distribute)
+    phase = initial_phase #(N_all)
+    f_distribute = np.tile(weights, (Nx, Ny, Nz, 1)) * rho0   #(Nx,Ny,Nz,19)
+    h_distribute = np.tile(weights, (Nx, Ny, Nz, 1)) * T0*heat_capacity #(Nx,Ny,Nz,19)
+    mass = np.sum(f_distribute, axis=-1)   # (Nx,Ny,Nz)
+    rho = compute_rho(f_distribute) # (Nx,Ny,Nz)
     u = np.zeros((Nx, Ny, Nz, 3))
-    enthalpy = compute_enthalpy(h_distribute)
-    T = compute_T(enthalpy)
-    lattice_ids = np.arange(Nx*Ny*Nz)
+    enthalpy = compute_enthalpy(h_distribute) # (Nx,Ny,Nz)
+    T = compute_T(enthalpy) # (Nx,Ny,Nz)
+    lattice_ids = np.arange(Nx*Ny*Nz) # (N_all)
     f_distribute, h_distribute, phase, mass = reini_gas_to_lg_vmap(lattice_ids, f_distribute, h_distribute, rho, u, enthalpy, T, phase, mass)
     mass = np.where(phase == ST.LG, 0.5*np.sum(f_distribute, axis=-1), mass)
 
